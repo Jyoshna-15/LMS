@@ -1,329 +1,3 @@
-
-
-
-
-// import { useEffect, useState } from 'react'
-// import {
-//   View,
-//   Text,
-//   TouchableOpacity,
-//   StyleSheet,
-//   Alert,
-//   Image,
-//   ActivityIndicator,
-// } from 'react-native'
-// import * as ImagePicker from 'expo-image-picker'
-// import AsyncStorage from '@react-native-async-storage/async-storage'
-// import { useAuth } from '../../src/features/auth/authStore'
-// import { useCourseContext } from '../../src/features/courses/courseContext'
-
-// const AVATAR_KEY = 'user_avatar'
-
-// export default function ProfileScreen() {
-//   const { logout, user } = useAuth()
-//   const { courses, enrolledIds, clearUserData } = useCourseContext()
-//   const [avatarUri, setAvatarUri] = useState<string | null>(null)
-//   const [uploadingAvatar, setUploadingAvatar] = useState(false)
-
-//   const displayName = user?.username ?? user?.email ?? 'Student'
-//   const avatarInitial = displayName.charAt(0).toUpperCase()
-//   const bookmarkedCount = courses.filter((c) => c.isBookmarked).length
-//   const enrolledCount = enrolledIds.length
-//   const totalCourses = courses.length
-
-//   useEffect(() => {
-//     AsyncStorage.getItem(AVATAR_KEY).then((uri) => {
-//       if (uri) setAvatarUri(uri)
-//     })
-//   }, [])
-
-//   const handlePickAvatar = async () => {
-//     Alert.alert('Update Profile Picture', 'Choose a source', [
-//       { text: 'Camera', onPress: () => pickImage('camera') },
-//       { text: 'Photo Library', onPress: () => pickImage('library') },
-//       { text: 'Cancel', style: 'cancel' },
-//     ])
-//   }
-
-//   const pickImage = async (source: 'camera' | 'library') => {
-//     try {
-//       setUploadingAvatar(true)
-
-//       if (source === 'camera') {
-//         const { status } = await ImagePicker.requestCameraPermissionsAsync()
-//         if (status !== 'granted') {
-//           Alert.alert('Permission needed', 'Camera permission is required to take a photo.')
-//           return
-//         }
-//       } else {
-//         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
-//         if (status !== 'granted') {
-//           Alert.alert('Permission needed', 'Photo library permission is required.')
-//           return
-//         }
-//       }
-
-//       const result = source === 'camera'
-//         ? await ImagePicker.launchCameraAsync({
-//             mediaTypes: ['images'],
-//             allowsEditing: true,
-//             aspect: [1, 1],
-//             quality: 0.8,
-//           })
-//         : await ImagePicker.launchImageLibraryAsync({
-//             mediaTypes: ['images'],
-//             allowsEditing: true,
-//             aspect: [1, 1],
-//             quality: 0.8,
-//           })
-
-//       if (!result.canceled && result.assets[0]) {
-//         const uri = result.assets[0].uri
-//         setAvatarUri(uri)
-//         await AsyncStorage.setItem(AVATAR_KEY, uri)
-//       }
-//     } catch {
-//       Alert.alert('Error', 'Failed to update profile picture.')
-//     } finally {
-//       setUploadingAvatar(false)
-//     }
-//   }
-
-//   const handleLogout = () => {
-//     Alert.alert('Logout', 'Are you sure you want to logout?', [
-//       { text: 'Cancel', style: 'cancel' },
-//       {
-//         text: 'Logout',
-//         style: 'destructive',
-//         onPress: async () => {
-//           await AsyncStorage.removeItem(AVATAR_KEY)
-//           await clearUserData()
-//           await logout()
-//         },
-//       },
-//     ])
-//   }
-
-//   return (
-//     <View style={styles.container}>
-//       <View style={styles.avatarSection}>
-//         <TouchableOpacity
-//           onPress={handlePickAvatar}
-//           style={styles.avatarWrapper}
-//           activeOpacity={0.8}
-//         >
-//           {uploadingAvatar ? (
-//             <View style={styles.avatar}>
-//               <ActivityIndicator color="#fff" />
-//             </View>
-//           ) : avatarUri ? (
-//             <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
-//           ) : (
-//             <View style={styles.avatar}>
-//               <Text style={styles.avatarText}>{avatarInitial}</Text>
-//             </View>
-//           )}
-//           <View style={styles.cameraIcon}>
-//             <Text style={styles.cameraEmoji}>📷</Text>
-//           </View>
-//         </TouchableOpacity>
-
-//         <Text style={styles.name}>{displayName}</Text>
-//         <Text style={styles.subtitle}>{user?.email ?? 'MiniLMS Student'}</Text>
-//         <Text style={styles.editHint}>Tap avatar to change photo</Text>
-//       </View>
-
-//       <View style={styles.statsRow}>
-//         <View style={styles.statBox}>
-//           <Text style={styles.statValue}>{totalCourses}</Text>
-//           <Text style={styles.statLabel}>Available</Text>
-//         </View>
-//         <View style={styles.statDivider} />
-//         <View style={styles.statBox}>
-//           <Text style={styles.statValue}>{bookmarkedCount}</Text>
-//           <Text style={styles.statLabel}>Bookmarked</Text>
-//         </View>
-//         <View style={styles.statDivider} />
-//         <View style={styles.statBox}>
-//           <Text style={styles.statValue}>{enrolledCount}</Text>
-//           <Text style={styles.statLabel}>Enrolled</Text>
-//         </View>
-//       </View>
-
-//       <View style={styles.menu}>
-//         <View style={styles.menuItem}>
-//           <Text style={styles.menuIcon}>📚</Text>
-//           <Text style={styles.menuLabel}>My Courses</Text>
-//           <Text style={styles.menuArrow}>›</Text>
-//         </View>
-//         <View style={styles.menuItem}>
-//           <Text style={styles.menuIcon}>🔖</Text>
-//           <Text style={styles.menuLabel}>Bookmarks</Text>
-//           <Text style={styles.menuValue}>{bookmarkedCount}</Text>
-//           <Text style={styles.menuArrow}>›</Text>
-//         </View>
-//         <View style={styles.menuItem}>
-//           <Text style={styles.menuIcon}>🎓</Text>
-//           <Text style={styles.menuLabel}>Enrolled</Text>
-//           <Text style={styles.menuValue}>{enrolledCount}</Text>
-//           <Text style={styles.menuArrow}>›</Text>
-//         </View>
-//         <View style={styles.menuItem}>
-//           <Text style={styles.menuIcon}>⚙️</Text>
-//           <Text style={styles.menuLabel}>Settings</Text>
-//           <Text style={styles.menuArrow}>›</Text>
-//         </View>
-//       </View>
-
-//       <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-//         <Text style={styles.logoutText}>Logout</Text>
-//       </TouchableOpacity>
-//     </View>
-//   )
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: '#f5f5f5',
-//     paddingTop: 56,
-//   },
-//   avatarSection: {
-//     alignItems: 'center',
-//     paddingVertical: 24,
-//     backgroundColor: '#fff',
-//     marginBottom: 16,
-//   },
-//   avatarWrapper: {
-//     position: 'relative',
-//     marginBottom: 12,
-//   },
-//   avatar: {
-//     width: 88,
-//     height: 88,
-//     borderRadius: 44,
-//     backgroundColor: '#6C63FF',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-//   avatarImage: {
-//     width: 88,
-//     height: 88,
-//     borderRadius: 44,
-//   },
-//   avatarText: {
-//     color: '#fff',
-//     fontSize: 32,
-//     fontWeight: '700',
-//   },
-//   cameraIcon: {
-//     position: 'absolute',
-//     bottom: 0,
-//     right: 0,
-//     backgroundColor: '#fff',
-//     borderRadius: 12,
-//     width: 26,
-//     height: 26,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     borderWidth: 1,
-//     borderColor: '#eee',
-//   },
-//   cameraEmoji: {
-//     fontSize: 14,
-//   },
-//   name: {
-//     fontSize: 20,
-//     fontWeight: '700',
-//     color: '#1a1a1a',
-//     marginBottom: 4,
-//   },
-//   subtitle: {
-//     fontSize: 14,
-//     color: '#666',
-//     marginBottom: 4,
-//   },
-//   editHint: {
-//     fontSize: 12,
-//     color: '#aaa',
-//   },
-//   statsRow: {
-//     flexDirection: 'row',
-//     backgroundColor: '#fff',
-//     borderRadius: 16,
-//     marginHorizontal: 16,
-//     marginBottom: 16,
-//     padding: 20,
-//     alignItems: 'center',
-//   },
-//   statBox: {
-//     flex: 1,
-//     alignItems: 'center',
-//   },
-//   statDivider: {
-//     width: 1,
-//     height: 40,
-//     backgroundColor: '#eee',
-//   },
-//   statValue: {
-//     fontSize: 24,
-//     fontWeight: '700',
-//     color: '#6C63FF',
-//     marginBottom: 4,
-//   },
-//   statLabel: {
-//     fontSize: 12,
-//     color: '#666',
-//   },
-//   menu: {
-//     backgroundColor: '#fff',
-//     borderRadius: 16,
-//     marginHorizontal: 16,
-//     marginBottom: 16,
-//     overflow: 'hidden',
-//   },
-//   menuItem: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     padding: 16,
-//     borderBottomWidth: 1,
-//     borderBottomColor: '#f5f5f5',
-//     gap: 12,
-//   },
-//   menuIcon: { fontSize: 20 },
-//   menuLabel: {
-//     flex: 1,
-//     fontSize: 15,
-//     color: '#1a1a1a',
-//   },
-//   menuValue: {
-//     fontSize: 14,
-//     color: '#6C63FF',
-//     fontWeight: '600',
-//   },
-//   menuArrow: {
-//     fontSize: 20,
-//     color: '#ccc',
-//   },
-//   logoutBtn: {
-//     marginHorizontal: 16,
-//     backgroundColor: '#fff',
-//     borderRadius: 14,
-//     padding: 16,
-//     alignItems: 'center',
-//     borderWidth: 1,
-//     borderColor: '#e74c3c',
-//   },
-//   logoutText: {
-//     color: '#e74c3c',
-//     fontSize: 16,
-//     fontWeight: '700',
-//   },
-// })
-
-
-
-
 import { useEffect, useState } from 'react'
 import {
   View,
@@ -468,11 +142,11 @@ export default function ProfileScreen() {
           {/* Member badge */}
           <View style={styles.memberBadge}>
             <Ionicons name="shield-checkmark" size={12} color="#6C63FF" />
-            <Text style={styles.memberText}>MiniLMS Member</Text>
+            <Text style={styles.memberText}>LMS Member</Text>
           </View>
         </View>
 
-        {/* ── Stats cards ── */}
+       
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
             <View style={[styles.statIconCircle, { backgroundColor: '#EEF0FF' }]}>
@@ -487,7 +161,7 @@ export default function ProfileScreen() {
               <Ionicons name="bookmark-outline" size={20} color="#F59E0B" />
             </View>
             <Text style={styles.statValue}>{bookmarkedCount}</Text>
-            <Text style={styles.statLabel}>Saved</Text>
+            <Text style={styles.statLabel}>Bookmarked</Text>
           </View>
 
           <View style={styles.statCard}>
@@ -499,7 +173,7 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* ── Progress bar ── */}
+       
         <View style={styles.progressCard}>
           <View style={styles.progressHeader}>
             <Text style={styles.progressTitle}>Learning Progress</Text>
@@ -513,7 +187,7 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
-        {/* ── Menu ── */}
+        
         <View style={styles.menuCard}>
           <Text style={styles.menuSectionLabel}>Account</Text>
 
@@ -576,7 +250,6 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── App info ── */}
         <View style={styles.menuCard}>
           <Text style={styles.menuSectionLabel}>About</Text>
           <TouchableOpacity style={styles.menuItem} activeOpacity={0.7}>
@@ -588,7 +261,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── Logout ── */}
+       
         <TouchableOpacity
           style={styles.logoutBtn}
           onPress={handleLogout}
@@ -607,7 +280,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F4F6FB' },
 
-  // ── Header banner ──
+  
   headerBanner: {
     backgroundColor: '#6C63FF',
     paddingTop: STATUSBAR_HEIGHT + 16,
@@ -690,7 +363,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // ── Stats ──
+
   statsContainer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
@@ -730,7 +403,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-  // ── Progress ──
+  
   progressCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
@@ -776,7 +449,7 @@ const styles = StyleSheet.create({
     color: '#888',
   },
 
-  // ── Menu ──
+  
   menuCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
@@ -841,7 +514,7 @@ const styles = StyleSheet.create({
     marginLeft: 48,
   },
 
-  // ── Logout ──
+ 
   logoutBtn: {
     flexDirection: 'row',
     alignItems: 'center',

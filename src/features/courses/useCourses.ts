@@ -21,22 +21,22 @@ export const useCourses = () => {
       setLoading(true)
       setError(null)
 
-      // try loading from cache first
+      
       const cached = await AsyncStorage.getItem('courses_cache')
       if (cached) {
         setCourses(JSON.parse(cached))
       }
 
-      // fetch fresh data
+      
       const data = await fetchCourses()
 
-      // load saved bookmarks
+     
       const savedBookmarks = await AsyncStorage.getItem(BOOKMARKS_KEY)
       const bookmarkIds: string[] = savedBookmarks
         ? JSON.parse(savedBookmarks)
         : []
 
-      // merge bookmark state into courses
+      
       const merged = data.map((course: Course) => ({
         ...course,
         isBookmarked: bookmarkIds.includes(course.id),
@@ -65,13 +65,13 @@ export const useCourses = () => {
     )
     setCourses(updated)
 
-    // save bookmark ids to AsyncStorage
+    
    const bookmarkedIds = updated
   .filter((c) => c.isBookmarked)
   .map((c) => c.id)
 await AsyncStorage.setItem(BOOKMARKS_KEY, JSON.stringify(bookmarkedIds))
 
-// trigger notification when 5+ courses bookmarked
+
 if (bookmarkedIds.length >= 5) {
   const { sendBookmarkNotification } = await import(
     '../notifications/notificationService'

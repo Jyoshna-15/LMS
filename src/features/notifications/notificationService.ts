@@ -1,14 +1,11 @@
 import * as Notifications from 'expo-notifications'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
 const LAST_OPEN_KEY = 'last_app_open'
 const REMINDER_ID_KEY = 'reminder_notification_id'
 const REMINDER_HOURS = 24
-const BOOKMARK_MILESTONE = 5
-
-// ─── Configure how notifications appear when app is foregrounded ──────────────
+export const BOOKMARK_MILESTONE = 5
+export const MILESTONE_NOTIFIED_KEY = 'bookmark_milestone_notified'
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -19,8 +16,6 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 })
-
-// ─── Permission ───────────────────────────────────────────────────────────────
 
 export const requestNotificationPermission = async (): Promise<boolean> => {
   try {
@@ -34,44 +29,51 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
   }
 }
 
-// ─── Bookmark milestone notification ─────────────────────────────────────────
-// Fires immediately when user hits BOOKMARK_MILESTONE bookmarks
-
-export const sendBookmarkNotification = async (count: number): Promise<void> => {
+// ✅ Now has: permission check + milestone gate + one-time flag
+export const sendBookmarkMilestoneNotification = async (
+  count: number
+): Promise<void> => {
   try {
+    // Check if we already sent this milestone notification
+    const alreadyNotified = await AsyncStorage.getItem(MILESTONE_NOTIFIED_KEY)
+    if (alreadyNotified) return
+
+    const hasPermission = await requestNotificationPermission()
+    if (!hasPermission) return
+
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: '🎉 You\'re on a roll!',
+        title: "🎉 You're on a roll!",
         body: `You've bookmarked ${count} courses. Keep exploring!`,
         data: { type: 'bookmark_milestone', count },
       },
-      trigger: null, // null = fire immediately
+      trigger: null, // fire immediately
     })
+
+    // Mark as notified so it never fires again
+    await AsyncStorage.setItem(MILESTONE_NOTIFIED_KEY, 'true')
   } catch {
     // Silently fail — notifications are non-critical
   }
 }
 
-// ─── 24hr reminder notification ──────────────────────────────────────────────
-// Cancels any existing reminder, records app open time,
-// then schedules a new reminder 24hrs from now.
-
 export const scheduleReminderNotification = async (): Promise<void> => {
   try {
-    // Record this open time
     await AsyncStorage.setItem(LAST_OPEN_KEY, Date.now().toString())
 
-    // Cancel existing reminder so we don't stack them
+    // Cancel any existing reminder before scheduling a fresh one
     const existingId = await AsyncStorage.getItem(REMINDER_ID_KEY)
     if (existingId) {
       await Notifications.cancelScheduledNotificationAsync(existingId)
     }
 
-    // Schedule a fresh reminder 24hrs from now
+    const hasPermission = await requestNotificationPermission()
+    if (!hasPermission) return
+
     const id = await Notifications.scheduleNotificationAsync({
       content: {
         title: '📚 Continue learning',
-        body: 'You have bookmarked courses waiting for you. Pick up where you left off!',
+        body: 'You have bookmarked courses waiting. Pick up where you left off!',
         data: { type: 'reminder' },
       },
       trigger: {
@@ -86,8 +88,6 @@ export const scheduleReminderNotification = async (): Promise<void> => {
     // Silently fail — notifications are non-critical
   }
 }
-
-// ─── Cancel reminder (call on app open to reset the 24hr window) ──────────────
 
 export const cancelReminderNotification = async (): Promise<void> => {
   try {
