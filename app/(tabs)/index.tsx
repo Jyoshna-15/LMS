@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useMemo, memo } from 'react'
 import {
   View,
@@ -177,8 +176,8 @@ export default function HomeScreen() {
         data={filteredCourses}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
+        extraData={filteredCourses}
         estimatedItemSize={280}
-        recycleItems
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

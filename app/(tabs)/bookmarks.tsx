@@ -1,3 +1,7 @@
+
+
+
+
 import { useCallback, useMemo, memo } from 'react'
 import {
   View,
@@ -131,7 +135,6 @@ export default function BookmarksScreen() {
           keyExtractor={keyExtractor}
           renderItem={renderItem}
           estimatedItemSize={130}
-          recycleItems
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={
             <View style={styles.header}>
