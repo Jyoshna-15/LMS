@@ -197,7 +197,7 @@ HTTP headers are set at request time and travel one way — from native to the W
 
 ## APK
 
-> Download the latest development build from [Releases](https://github.com/your-username/MiniLMSNew/releases)
+https://drive.google.com/file/d/1nPteJ1QKp2Vc5DvliUck_x-FcOE1oDJq/view?usp=sharing
 
 ### Build locally
 
