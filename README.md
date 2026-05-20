@@ -78,7 +78,7 @@ app/
 ### Installation
 
 ```bash
-git clone https://github.com/your-username/MiniLMSNew.git
+git clone https://github.com/Jyoshna-15/LMS.git
 cd MiniLMSNew
 npm install
 ```
