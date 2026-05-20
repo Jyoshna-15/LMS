@@ -94,10 +94,11 @@ export default function RegisterScreen() {
     strengthScore === 2 ? '#F59E0B' : '#22C55E'
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+   <KeyboardAvoidingView
+  style={styles.flex}
+  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+  keyboardVerticalOffset={Platform.OS === 'android' ? 30 : 0}
+>
       <StatusBar barStyle="dark-content" backgroundColor="#F4F6FB" />
       <ScrollView
         contentContainerStyle={styles.container}
